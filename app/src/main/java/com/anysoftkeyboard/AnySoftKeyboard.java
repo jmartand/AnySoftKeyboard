@@ -134,7 +134,6 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping {
      * is out-side completions needed
      */
     private boolean mCompletionOn;
-    private boolean mAutoSpace;
     private boolean mInputFieldSupportsAutoPick;
     private boolean mAutoCorrectOn;
     private boolean mAllowSuggestionsRestart = true;
@@ -1865,7 +1864,6 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping {
     @Override
     public void pickSuggestionManually(int index, CharSequence suggestion, boolean withAutoSpaceEnabled) {
         if (mCandidateView.getSuggestions().isEmpty()) return;
-        withAutoSpaceEnabled = withAutoSpaceEnabled && mAutoSpace;
 
         super.pickSuggestionManually(index, suggestion, withAutoSpaceEnabled);
         final String typedWord = mWord.getTypedWord().toString();
