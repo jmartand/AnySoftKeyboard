@@ -9,7 +9,6 @@ import com.anysoftkeyboard.api.KeyCodes;
 import com.anysoftkeyboard.dictionaries.TextEntryState;
 import com.anysoftkeyboard.gesturetyping.GestureTypingDetector;
 import com.anysoftkeyboard.keyboards.AnyKeyboard;
-import com.anysoftkeyboard.keyboards.Keyboard;
 import com.menny.android.anysoftkeyboard.R;
 
 import java.util.ArrayList;
