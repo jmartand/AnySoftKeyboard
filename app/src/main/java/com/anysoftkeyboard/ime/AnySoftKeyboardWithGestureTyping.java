@@ -105,7 +105,7 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
         if (getGestureTypingEnabled() && TextEntryState.getState() == TextEntryState.State.PERFORMED_GESTURE) {
             confirmLastGesture(primaryCode != KeyCodes.SPACE && mAutoSpace);
 
-            if (primaryCode == KeyCodes.DELETE) {
+            if (primaryCode == KeyCodes.DELETE || primaryCode == KeyCodes.DELETE_WORD) {
                 TextEntryState.performedGesture();
                 // Delete the space added by picking the last suggestion
                 handleDeleteLastCharacter(false);
@@ -125,11 +125,17 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
     @Override
     public void onGestureTypingInputDone() {
         if (!getGestureTypingEnabled()) return;
-        confirmLastGesture(mAutoSpace);
 
         InputConnection ic = getCurrentInputConnection();
 
         if (ic != null) {
+            if (TextEntryState.getState() == TextEntryState.State.PERFORMED_GESTURE) {
+                confirmLastGesture(mAutoSpace);
+            } else {
+                CharSequence text = ic.getTextBeforeCursor(1, 0);
+                if (mAutoSpace && text != null && text.length() > 0 && text.charAt(0) != ' ') ic.commitText(" ", 1);
+            }
+
             ArrayList<CharSequence> gestureTypingPossibilities = mGestureTypingDetector.getCandidates();
 
             if (!gestureTypingPossibilities.isEmpty()) {

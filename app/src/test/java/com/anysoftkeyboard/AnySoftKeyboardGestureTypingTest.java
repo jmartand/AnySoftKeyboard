@@ -48,10 +48,10 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
     }
 
     @Test
-    public void testDoesNotConfirmLastGesturesWhenNonePrintableKeyIsPressed() {
+    public void testConfirmsLastGestureWhenShiftIsPressed() {
         simulateGestureProcess("hello");
         mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
-        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        Assert.assertEquals("hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
 
     @Test
