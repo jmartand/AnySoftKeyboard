@@ -132,6 +132,7 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
             if (TextEntryState.getState() == TextEntryState.State.PERFORMED_GESTURE) {
                 confirmLastGesture(mAutoSpace);
             } else {
+                ic.finishComposingText();
                 CharSequence text = ic.getTextBeforeCursor(1, 0);
                 if (mAutoSpace && text != null && text.length() > 0 && text.charAt(0) != ' ') ic.commitText(" ", 1);
             }

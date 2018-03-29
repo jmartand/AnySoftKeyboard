@@ -62,6 +62,39 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
     }
 
     @Test
+    public void testDoesNotAddSpaceForTextIfSpacePressed() {
+        mAnySoftKeyboardUnderTest.simulateTextTyping("hello");
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SPACE);
+        Assert.assertEquals("hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("hello welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testAddsSpaceForText() {
+        mAnySoftKeyboardUnderTest.simulateTextTyping("hello");
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("hello welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testAddsSpaceForTextNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        mAnySoftKeyboardUnderTest.simulateTextTyping("hello");
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("hellowelcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testAddsSpaceForTextUnrecognized() {
+        mAnySoftKeyboardUnderTest.simulateTextTyping("notindictionary");
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("notindictionary welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
     public void testDeleteWholeGesturedWord() {
         simulateGestureProcess("hello");
         simulateGestureProcess("welcome");
@@ -107,6 +140,8 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         Assert.assertEquals("hello you", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
         mAnySoftKeyboardUnderTest.simulateTextTyping("all");
         Assert.assertEquals("hello you all", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("hello you al", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
 
     @Test
@@ -121,6 +156,105 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
         Assert.assertEquals("", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
+
+    @Test
+    public void testOutputPrimarySuggestionOnGestureDoneNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testConfirmsLastGesturesWhenPrintableKeyIsPressedNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        mAnySoftKeyboardUnderTest.simulateKeyPress('a');
+        Assert.assertEquals("helloa", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testConfirmsLastGestureWhenShiftIsPressedNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testConfirmsLastGesturesOnNextGestureStartsNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("hellowelcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testDeleteWholeGesturedWordNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("hellowelcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("hell", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("hel", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("he", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("h", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+
+    @Test
+    public void testRewriteGesturedWordNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress('p');
+        Assert.assertEquals("p", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SPACE);
+        Assert.assertEquals("p ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("p welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("p ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateTextTyping("ing");
+        Assert.assertEquals("p ing", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testSpaceAfterGestureJustConfirmsNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SPACE);
+        Assert.assertEquals("hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("you");
+        Assert.assertEquals("hello you", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateTextTyping("all");
+        Assert.assertEquals("hello youall", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("hello youal", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testDeleteGesturedWordOnWholeWordNoAutoSpace() {
+        SharedPrefsHelper.setPrefsValue(R.string.settings_key_auto_space, false);
+        simulateGestureProcess("hello");
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("hellowelcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
+        Assert.assertEquals("", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
+        Assert.assertEquals("", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
 
     private void simulateGestureProcess(String pathKeys) {
         long time = ShadowSystemClock.currentTimeMillis();
