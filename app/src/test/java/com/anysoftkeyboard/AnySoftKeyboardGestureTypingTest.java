@@ -48,6 +48,15 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
     }
 
     @Test
+    public void testConfirmsLastGesturesWhenPrintableKeyIsPressedPickSuggestion() {
+        simulateGestureProcess("hello");
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "mysuggest");
+        Assert.assertEquals("mysuggest ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress('a');
+        Assert.assertEquals("mysuggest a", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
     public void testConfirmsLastGestureWhenShiftIsPressed() {
         simulateGestureProcess("hello");
         mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
@@ -59,6 +68,16 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         simulateGestureProcess("hello");
         simulateGestureProcess("welcome");
         Assert.assertEquals("hello welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testConfirmsLastGesturesOnNextGestureStartsPickSuggestion() {
+        simulateGestureProcess("hello");
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "mysuggest");
+        Assert.assertEquals("mysuggest ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("welcome");
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "mysuggest2");
+        Assert.assertEquals("mysuggest mysuggest2 ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
 
     @Test
@@ -76,6 +95,16 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
         simulateGestureProcess("welcome");
         Assert.assertEquals("hello welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testAddsSpaceForTextPickSuggestion() {
+        mAnySoftKeyboardUnderTest.simulateTextTyping("hello");
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "mysuggest");
+        Assert.assertEquals("mysuggest ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("mysuggest welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
 
     @Test
@@ -111,6 +140,20 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         Assert.assertEquals("he", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
 
+    @Test
+    public void testDeleteWholeGesturedWordPickSuggestion() {
+        simulateGestureProcess("hello");
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "ms1");
+        simulateGestureProcess("welcome");
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "ms2");
+        Assert.assertEquals("ms1 ms2 ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("ms1 ms2", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("ms1 ms", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("ms1 m", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
 
     @Test
     public void testRewriteGesturedWord() {
@@ -128,6 +171,25 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         Assert.assertEquals("p ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
         mAnySoftKeyboardUnderTest.simulateTextTyping("ing");
         Assert.assertEquals("p ing", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testRewriteGesturedWordPickSuggestion() {
+        simulateGestureProcess("hello");
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "ms1");
+        Assert.assertEquals("ms1 ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("ms1", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress('p');
+        Assert.assertEquals("ms1p", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SPACE);
+        Assert.assertEquals("ms1p ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("ms1p welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE);
+        Assert.assertEquals("ms1p ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateTextTyping("ing");
+        Assert.assertEquals("ms1p ing", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
 
     @Test
@@ -153,6 +215,20 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         Assert.assertEquals("hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
         mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
         Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
+        Assert.assertEquals("", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testDeleteGesturedWordOnWholeWordPickSuggestion() {
+        simulateGestureProcess("hello");
+        mAnySoftKeyboardUnderTest.pickSuggestionManually(1, "ms");
+        simulateGestureProcess("welcome");
+        Assert.assertEquals("ms welcome", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
+        Assert.assertEquals("ms ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
+        Assert.assertEquals("ms", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
         mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.DELETE_WORD);
         Assert.assertEquals("", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
     }
