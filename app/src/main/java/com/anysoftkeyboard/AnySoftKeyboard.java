@@ -590,6 +590,11 @@ public abstract class AnySoftKeyboard extends AnySoftKeyboardWithGestureTyping {
                 postRestartWordSuggestion();
             }
         }
+
+        if (shouldBeShiftedAfterGesture()) {
+            mShiftKeyState.setActiveState(true);
+            handleShift();
+        }
     }
 
     private void postRestartWordSuggestion() {

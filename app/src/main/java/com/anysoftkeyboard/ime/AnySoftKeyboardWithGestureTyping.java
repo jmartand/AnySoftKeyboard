@@ -21,6 +21,9 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
     private boolean mGestureTypingEnabled;
     @Nullable
     private GestureTypingDetector mGestureTypingDetector;
+    private boolean justConfirmedGestureWithShift = false;
+    private boolean gestureWasShifted = false;
+    private boolean gestureWasCapsLocked = false;
 
     @Override
     public void onCreate() {
@@ -87,6 +90,10 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
     @Override
     public void onGestureTypingInputStart(int x, int y, long eventTime) {
         if (!getGestureTypingEnabled()) return;
+        justConfirmedGestureWithShift = false;
+        gestureWasShifted = mShiftKeyState.isActive() || mShiftKeyState.isLocked();
+        gestureWasCapsLocked = mShiftKeyState.isLocked();
+
         //we can call this as many times as we want, it has a short-circuit check.
         setCandidatesViewShown(true/*we need candidates-view to be shown, since we are going to show suggestions*/);
 
@@ -101,6 +108,9 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
     }
 
     public boolean handleKeyAfterGesture(int primaryCode) {
+        if (!getGestureTypingEnabled()) return false;
+
+        justConfirmedGestureWithShift = false;
         if (getGestureTypingEnabled() && TextEntryState.getState() == TextEntryState.State.PERFORMED_GESTURE) {
             confirmLastGesture(primaryCode != KeyCodes.SPACE && mAutoSpace);
 
@@ -112,9 +122,18 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
                 handleBackWord(getCurrentInputConnection());
                 return true;
             }
+
+            if (primaryCode == KeyCodes.SHIFT || primaryCode == KeyCodes.SHIFT_LOCK) {
+                justConfirmedGestureWithShift = true;
+            }
         }
 
         return false;
+    }
+
+    public boolean shouldBeShiftedAfterGesture() {
+        if (!getGestureTypingEnabled()) return false;
+        return justConfirmedGestureWithShift;
     }
 
     private void confirmLastGesture(boolean withAutoSpace) {
@@ -139,16 +158,13 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
             ArrayList<CharSequence> gestureTypingPossibilities = mGestureTypingDetector.getCandidates();
 
             if (!gestureTypingPossibilities.isEmpty()) {
-                final boolean isShifted = mShiftKeyState.isActive();
-                final boolean isCapsLocked = mShiftKeyState.isLocked();
-
                 final Locale locale = getCurrentAlphabetKeyboard().getLocale();
-                if (locale != null && (isShifted || isCapsLocked)) {
+                if (locale != null && gestureWasShifted) {
 
                     StringBuilder builder = new StringBuilder();
                     for (int i = 0; i < gestureTypingPossibilities.size(); ++i) {
                         final CharSequence word = gestureTypingPossibilities.get(i);
-                        if (isCapsLocked) {
+                        if (gestureWasCapsLocked) {
                             gestureTypingPossibilities.set(i, word.toString().toUpperCase(locale));
                         } else {
                             builder.append(word.subSequence(0, 1).toString().toUpperCase(locale));
@@ -166,7 +182,7 @@ public abstract class AnySoftKeyboardWithGestureTyping extends AnySoftKeyboardWi
 
                 // This is used when correcting
                 mWord.reset();
-                mWord.setAutoCapitalized(isShifted || isCapsLocked);
+                mWord.setAutoCapitalized(gestureWasShifted);
                 mWord.simulateTypedWord(word);
 
                 mWord.setPreferredWord(mWord.getTypedWord());

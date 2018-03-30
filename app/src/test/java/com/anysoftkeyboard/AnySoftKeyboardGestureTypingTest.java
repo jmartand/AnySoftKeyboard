@@ -387,6 +387,7 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         int w = startKey.width/2;
         int h = startKey.height/2;
         mAnySoftKeyboardUnderTest.onGestureTypingInputStart(startKey.x + w, startKey.y + h, time);
+        mAnySoftKeyboardUnderTest.onUpdateSelection(0,0,0,0,0,0);
         for (int keyIndex = 1; keyIndex < pathKeys.length(); keyIndex++) {
             final Keyboard.Key followingKey = mAnySoftKeyboardUnderTest.findKeyWithPrimaryKeyCode(pathKeys.charAt(keyIndex));
             //simulating gesture from startKey to followingKey
