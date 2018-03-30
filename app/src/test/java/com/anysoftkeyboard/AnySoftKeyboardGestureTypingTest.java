@@ -61,6 +61,54 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         simulateGestureProcess("hello");
         mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
         Assert.assertEquals("hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        Assert.assertTrue(mAnySoftKeyboardUnderTest.isShifted());
+        simulateGestureProcess("world");
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
+        Assert.assertEquals("hello World", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+    }
+
+    @Test
+    public void testShift() {
+        simulateGestureProcess("hello");
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SPACE);
+        Assert.assertEquals("hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
+        Assert.assertTrue(mAnySoftKeyboardUnderTest.isShifted());
+        simulateGestureProcess("world");
+        Assert.assertEquals("hello World", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
+    }
+
+    @Test
+    public void testShiftBeginning() {
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
+        simulateGestureProcess("hello");
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
+        Assert.assertEquals("Hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SPACE);
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
+        Assert.assertEquals("Hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
+        Assert.assertTrue(mAnySoftKeyboardUnderTest.isShifted());
+        simulateGestureProcess("world");
+        Assert.assertEquals("Hello World", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
+    }
+
+    @Test
+    public void testShiftWithTyping() {
+        simulateGestureProcess("hello");
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
+        Assert.assertEquals("hello", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SPACE);
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
+        Assert.assertEquals("hello ", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        mAnySoftKeyboardUnderTest.simulateKeyPress(KeyCodes.SHIFT);
+        Assert.assertTrue(mAnySoftKeyboardUnderTest.isShifted());
+        mAnySoftKeyboardUnderTest.simulateTextTyping("world");
+        Assert.assertEquals("hello World", mAnySoftKeyboardUnderTest.getCurrentInputConnectionText());
+        Assert.assertFalse(mAnySoftKeyboardUnderTest.isShifted());
     }
 
     @Test
@@ -336,37 +384,22 @@ public class AnySoftKeyboardGestureTypingTest extends AnySoftKeyboardBaseTest {
         long time = ShadowSystemClock.currentTimeMillis();
         Keyboard.Key startKey = mAnySoftKeyboardUnderTest.findKeyWithPrimaryKeyCode(pathKeys.charAt(0));
         mAnySoftKeyboardUnderTest.onPress(startKey.getPrimaryCode());
-        mAnySoftKeyboardUnderTest.onGestureTypingInputStart(startKey.x + 2, startKey.y + 2, time);
+        int w = startKey.width/2;
+        int h = startKey.height/2;
+        mAnySoftKeyboardUnderTest.onGestureTypingInputStart(startKey.x + w, startKey.y + h, time);
         for (int keyIndex = 1; keyIndex < pathKeys.length(); keyIndex++) {
             final Keyboard.Key followingKey = mAnySoftKeyboardUnderTest.findKeyWithPrimaryKeyCode(pathKeys.charAt(keyIndex));
             //simulating gesture from startKey to followingKey
-            final float xStep = startKey.width / 3;
-            final float yStep = startKey.height / 3;
-
-            final float xDistance = followingKey.x - startKey.x;
-            final float yDistance = followingKey.y - startKey.y;
-            int callsToMake = (int) Math.ceil(((xDistance + yDistance) / 2) / ((xStep + yStep) / 2));
-
             final long timeStep = 16;
-
-            float currentX = startKey.x;
-            float currentY = startKey.y;
 
             ShadowSystemClock.sleep(timeStep);
             time = ShadowSystemClock.currentTimeMillis();
-            mAnySoftKeyboardUnderTest.onGestureTypingInput(startKey.x + 2, startKey.y + 2, time);
-
-            while (callsToMake > 0) {
-                callsToMake--;
-                currentX += xStep;
-                currentY += yStep;
-                ShadowSystemClock.sleep(timeStep);
-                time = ShadowSystemClock.currentTimeMillis();
-                mAnySoftKeyboardUnderTest.onGestureTypingInput((int) currentX + 2, (int) currentY + 2, time);
-            }
+            mAnySoftKeyboardUnderTest.onGestureTypingInput(startKey.x + w, startKey.y + h, time);
 
             startKey = followingKey;
         }
+        mAnySoftKeyboardUnderTest.onGestureTypingInput(startKey.x + w, startKey.y + h, time);
         mAnySoftKeyboardUnderTest.onGestureTypingInputDone();
+        mAnySoftKeyboardUnderTest.onRelease(startKey.getPrimaryCode());
     }
 }
